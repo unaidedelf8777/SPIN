@@ -49,8 +49,8 @@ with open(f'{input_dir}/synthetic_test.json', 'w') as f:
 dataset = load_dataset('json', data_files=f'{input_dir}/synthetic_train.json',split='train')
 dataset_test = load_dataset('json', data_files=f'{input_dir}/synthetic_test.json',split='train')
 
-print(len(dataset))
-print(len(dataset_test))
+print(f"Train data length: {len(dataset)}")
+print(f"Test set length: {len(dataset_test)}")
 
 pq.write_table(dataset.data.table, f'{output_dir}/train_prefs-00000-of-00001.parquet')
 pq.write_table(dataset_test.data.table, f'{output_dir}/test_prefs-00000-of-00001.parquet')

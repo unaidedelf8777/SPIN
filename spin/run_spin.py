@@ -27,7 +27,7 @@ from torch.utils.data import Subset
 import re
 
 def apply_chat_template(
-    example, tokenizer, task, assistant_prefix="<|assistant|>\n"
+    example, tokenizer, task, assistant_prefix="<|im_start|>assistant\n"
 ):
     def _strip_prefix(s, pattern):
         # Use re.escape to escape any special characters in the pattern

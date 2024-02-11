@@ -62,8 +62,10 @@ def main():
         device_map={"": accelerator.process_index},
         torch_dtype=torch.bfloat16,
     )
-    tokenizer = AutoTokenizer.from_pretrained(model_path)   
-    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+
+    if not tokenizer.pad_token:
+        tokenizer.pad_token = tokenizer.eos_token
 
     # load data
     data = load_dataset(args.input_dir, split=args.split)
@@ -75,10 +77,13 @@ def main():
         else:
             data = data[sub_len*data_frac:sub_len*(data_frac+1)]['real']
 
-    prompts_all = ["### Instruction: " + data[idx][0]['content'] + "\n\n### Response: " for idx in range(len(data))]
+    prompts_all = ["<|im_start|>user\n" + data[idx][0]['content'] + "<|im_end|>" + "\n<|im_start|>assistant\n" for idx in range(len(data))]
     prompts_old = [data[idx][0]['content'] for idx in range(len(data))]
     corrects_all = [data[idx][1]['content'] for idx in range(len(data))]
 
+    print("Example prompts to be used:\n\n")
+    print(prompts_all[0])
+    print(prompts_all[1])
     # sync GPUs and start the timer
     accelerator.wait_for_everyone()    
     start=time.time()
@@ -90,7 +95,7 @@ def main():
 
         for prompts_tokenized in tqdm(prompt_batches):
             # set max_new_tokens smaller for faster inference
-            outputs_tokenized=model.generate(**prompts_tokenized, max_new_tokens=256, pad_token_id=tokenizer.eos_token_id)
+            outputs_tokenized=model.generate(**prompts_tokenized, max_new_tokens=750, pad_token_id=tokenizer.eos_token_id)
 
             # remove prompt from gen. tokens
             outputs_tokenized=[ tok_out[len(tok_in):] 
